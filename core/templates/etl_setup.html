@@ -474,11 +474,40 @@
 						</div>
                         <div class="form-group">
                             <div class="input-group mb-3">
-                                <form method="post" action="/etl/" enctype="multipart/form-data"> {% csrf_token %}
-                                    {{ form.as_p }}
+                                <form method="post" action="/etl_setup/" enctype="multipart/form-data" class="form form-control"> {% csrf_token %}
+                                    <table>
+                                        {{ form.as_table }}
+                                    </table>
+{#                                    <div class="form-group">#}
+{#                                    <label for="dimension_attributes">Choose columns</label>#}
+{#                                        <select multiple name="dimension_attributes" class="form-control" id="dimension_attributes">#}
+{#                                            {% for name in headers %}#}
+{#                                                <option value={{ name }}>{{ name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered-bd-info table-head-bg-default">
+                                            <thead>
+                                                <tr>
+                                                    {% for name in headers %}
+                                                        <th>{{ name }}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in csv_source %}
+                                                    <tr>
+                                                        {% for data in row.values %}
+                                                            <td>{{ data }}</td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                     <div class="card-action">
-                                        <input type="submit" value="Upload" class="btn btn-success"/>
-                                        <a type="button" class="btn btn-link" href="{% url 'etl_setup' %}">Next</a>
+                                        <input type="submit" value="Start Load" class="btn btn-success"/>
                                     </div>
                                 </form>
                             </div>
