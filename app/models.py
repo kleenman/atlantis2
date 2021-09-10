@@ -22,7 +22,6 @@ class BaseFlow(models.Model):
     connection_str = models.CharField(max_length=9999)
     data_source = models.FileField(upload_to='app/uploads')
     dimension_name = models.CharField(max_length=9999)
-    # dimension_attributes = models.ForeignKey(DimensionAttribute)
     dimension_lookup_attributes = models.CharField(max_length=9999)
 
     def get_conn_wrapper(self):
@@ -37,3 +36,20 @@ class BaseFlow(models.Model):
     def conn_commit_close(self):
         self.conn_wrapper.commit()
         self.conn_wrapper.close()
+
+
+class DwInfo(models.Model):
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    host = models.CharField(max_length=100)
+    dbname = models.CharField(max_length=100)
+    db_user = models.CharField(max_length=100)
+    db_password = models.CharField(max_length=100)
+    db_port = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.dbname
+
+    def get_conn_string(self):
+        conn_string = f"""host='{self.host}' dbname='{self.dbname}' user='{self.db_user}' password='{self.db_password}'\
+         port='{self.db_port}'"""
+        return conn_string

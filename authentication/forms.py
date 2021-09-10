@@ -23,6 +23,7 @@ class LoginForm(forms.Form):
             }
         ))
 
+
 class SignUpForm(UserCreationForm):
     username = forms.CharField(
         widget=forms.TextInput(

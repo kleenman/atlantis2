@@ -133,5 +133,7 @@ MEDIA_ROOT = os.path.join(CORE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 ASGI_APPLICATION = 'core.asgi.application'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 #############################################################
 #############################################################

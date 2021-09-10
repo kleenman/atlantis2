@@ -1,15 +1,26 @@
 from django import forms
-from .models import BaseFlow
+from django.forms import ModelForm
+from .models import DwInfo
 
 
 class BaseFlowForm(forms.Form):
-    def __init__(self, col_names, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        col_names = kwargs.pop('col_names', None)
+        user_dws = kwargs.pop('user_dws', None)
         super(BaseFlowForm, self).__init__(*args, **kwargs)
         self.fields['dimension_attributes'].choices = [(n, n) for n in col_names]
         self.fields['dimension_lookup_attributes'].choices = [(n, n) for n in col_names]
+        self.fields['data_warehose'].choices = [(dw, dw) for dw in user_dws]
 
-    connection_str = forms.CharField(
-        required=True
+    data_warehose = forms.ChoiceField(
+        required=True,
+        choices=(),
+        widget=forms.Select(
+            attrs={
+                'class': 'form-control form-control',
+                'id': 'defaultSelect'
+            }
+        )
     )
     dimension_name = forms.CharField(
         required=True,
@@ -18,7 +29,7 @@ class BaseFlowForm(forms.Form):
             }
         )
     )
-    dimension_attributes = forms.ChoiceField(
+    dimension_attributes = forms.MultipleChoiceField(
         required=True,
         choices=(),
         widget=forms.SelectMultiple(
@@ -28,12 +39,30 @@ class BaseFlowForm(forms.Form):
         )
     )
 
-    dimension_lookup_attributes = forms.ChoiceField(
+    dimension_lookup_attributes = forms.MultipleChoiceField(
         required=True,
         choices=(),
         widget=forms.SelectMultiple(
             attrs={
                 'class': 'form-control'
+            }
+        )
+    )
+
+    quoted_col_names = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'form-check-input'
+            }
+        )
+    )
+
+    create_table = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'form-check-input'
             }
         )
     )
@@ -62,3 +91,7 @@ class FileUploadForm(forms.Form):
     )
 
 
+class DwInfoForm(ModelForm):
+    class Meta:
+        model = DwInfo
+        fields = ['host', 'dbname', 'db_user', 'db_password', 'db_port']

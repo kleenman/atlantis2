@@ -15,6 +15,8 @@ urlpatterns = [
 
     path('etl_setup/', views.etl_setup, name='etl_setup'),
 
+    path('user_databases/', views.user_databases, name='user_databases'),
+
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages')
 
