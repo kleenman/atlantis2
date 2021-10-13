@@ -486,6 +486,27 @@
 {#                                            {% endfor %}#}
 {#                                        </select>#}
 {#                                    </div>#}
+                                    <div class="card-action">
+                                        <input type="submit" value="Start Load" class="btn btn-success"/>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered-bd-success table-head-bg-info">
+                                            <thead>
+                                                {% for c in desc.columns %}
+                                                    <th>{{ c }}</th>
+                                                {% endfor %}
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    {% for k, v in desc.iteritems %}
+                                                        <td>
+                                                            {{ v }}
+                                                        </td>
+                                                    {% endfor %}
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                     <div class="table-responsive">
                                         <table class="table table-bordered-bd-info table-head-bg-default">
                                             <thead>
@@ -496,18 +517,15 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for row in csv_source %}
+                                                {% for row in csv_source|slice:":50" %}
                                                     <tr>
-                                                        {% for data in row.values %}
+                                                        {% for data in row.values|slice:":50" %}
                                                             <td>{{ data }}</td>
                                                         {% endfor %}
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>
-                                    </div>
-                                    <div class="card-action">
-                                        <input type="submit" value="Start Load" class="btn btn-success"/>
                                     </div>
                                 </form>
                             </div>

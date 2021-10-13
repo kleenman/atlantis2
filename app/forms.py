@@ -39,6 +39,15 @@ class BaseFlowForm(forms.Form):
         )
     )
 
+    nrows = forms.IntegerField(
+        required=True,
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+
     dimension_lookup_attributes = forms.MultipleChoiceField(
         required=True,
         choices=(),

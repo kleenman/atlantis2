@@ -10,10 +10,11 @@ import json
 
 import pygrametl
 import psycopg2
+import pandas as pd
 from django.utils.datastructures import MultiValueDictKeyError
 from pygrametl.datasources import CSVSource, MergeJoiningSource, TransformingSource, PandasSource
 from pygrametl.tables import Dimension
-from app.utils import double_quote, pd_create_table
+from app.utils import double_quote, TableFactory, fix_numbers
 from time import sleep
 from django_globals import globals
 from django.core.files.storage import FileSystemStorage
@@ -67,10 +68,19 @@ def etl_setup(request):
     data_path = request.session['data_path']
     file_handle = io.open(data_path, 'r', 16394, encoding='utf-8-sig')
     csv_source = CSVSource(file_handle, delimiter=delimiter)
+
     col_names = list(csv_source.fieldnames)
+    key = 'id'
     user = request.user
     user_dws = DwInfo.objects.filter(user=user)
     form = BaseFlowForm(user_dws=user_dws, col_names=col_names)
+    display_tf = TableFactory(
+        data_path=data_path,
+        delimiter=delimiter,
+        key=key
+    )
+    display_df = display_tf.create_df(nrows=100)
+    desc = display_df.describe(datetime_is_numeric=True)
     if request.method == 'POST':
         form = BaseFlowForm(request.POST, user_dws=user_dws, col_names=col_names)
         if form.is_valid():
@@ -79,11 +89,20 @@ def etl_setup(request):
             connection_str = dw.get_conn_string()
             flow = BaseFlow(connection_str=connection_str, dimension_name=request.POST['dimension_name'])
             flow.save()
+            conn_wrapper = flow.get_conn_wrapper()
             post = request.POST.copy()
             dimension_attributes = post.pop('dimension_attributes')
             lookupatts = post.pop('dimension_lookup_attributes')
-            key = 'id'
-            conn_wrapper = flow.get_conn_wrapper()
+            nrows = int(request.POST['nrows'])
+            tf = TableFactory(
+                dimension_attributes=dimension_attributes,
+                data_path=data_path,
+                delimiter=delimiter,
+                key=key,
+                flow=flow,
+                conn_wrapper=conn_wrapper
+            )
+            df = tf.create_df(nrows=nrows)
             try:
                 quoted_col_names = request.POST['quoted_col_names']
             except MultiValueDictKeyError:
@@ -94,7 +113,7 @@ def etl_setup(request):
                 create_table = False
 
             if create_table:
-                pd_create_table(
+                tf = TableFactory(
                     data_path=data_path,
                     dimension_attributes=dimension_attributes,
                     delimiter=delimiter,
@@ -102,28 +121,27 @@ def etl_setup(request):
                     flow=flow,
                     conn_wrapper=conn_wrapper
                 )
-            if quoted_col_names or create_table:
-                quoted_attrs = double_quote(dimension_attributes)
-                dimension_attributes = quoted_attrs
-                quoted_fieldnames = double_quote(csv_source.fieldnames)
-                csv_source.fieldnames = quoted_fieldnames
-                quoted_lookupatts = double_quote(lookupatts)
-                lookupatts = quoted_lookupatts
+                dimension_attributes = double_quote(dimension_attributes)
+                lookupatts = double_quote(lookupatts)
+                tf.create_table(df)
 
+            if quoted_col_names:
+                dimension_attributes = double_quote(dimension_attributes)
+                df.columns = double_quote(df.columns)
+                lookupatts = double_quote(lookupatts)
+
+            pdsource = PandasSource(df)
             d = Dimension(
                 name=flow.dimension_name,
                 key=key,
                 attributes=dimension_attributes,
                 lookupatts=lookupatts
             )
-            for row in csv_source:
+            for row in pdsource:
                 d.insert(row)
-                print(row)
-
             file_handle.close()
             conn_wrapper.commit()
             conn_wrapper.close()
-            form = BaseFlowForm(user_dws=user_dws, col_names=col_names)
             return redirect('home')
 
     context = {
@@ -131,9 +149,17 @@ def etl_setup(request):
         'form': form,
         'delimiter': delimiter,
         'csv_source': csv_source,
-        'headers': col_names
+        'headers': col_names,
+        'desc': desc
     }
     return render(request, 'etl_setup.html', context)
+
+
+def descriptive_statistics(request):
+    context = {
+        'segment': 'etl',
+    }
+    return render(request, 'descriptive_statistics.html', context)
 
 
 def etl(request):
