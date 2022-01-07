@@ -2,12 +2,13 @@ from datetime import datetime
 import pandas as pd
 import locale
 
+
 locale.setlocale(locale.LC_ALL, 'de_DE.UTF8')
 pd.options.mode.use_inf_as_na = True
 
 
 def double_quote(arg):
-    encapsulated = [f'"{c}"' for c in arg]
+    encapsulated = [f'"{str(c)}"' for c in arg]
     return encapsulated
 
 

@@ -2,21 +2,13 @@
 """
 Copyright (c) 2019 - present AppSeed.us
 """
-import asyncio
-import csv
 import io
 import os
-import json
-
-import pygrametl
-import psycopg2
-import pandas as pd
+import time
 from django.utils.datastructures import MultiValueDictKeyError
-from pygrametl.datasources import CSVSource, MergeJoiningSource, TransformingSource, PandasSource
+from pygrametl.datasources import CSVSource, PandasSource
 from pygrametl.tables import Dimension
 from app.utils import double_quote, TableFactory, fix_numbers
-from time import sleep
-from django_globals import globals
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
@@ -64,6 +56,7 @@ def pages(request):
 
 @login_required(login_url="/login/")
 def etl_setup(request):
+    get_time = time.time()
     delimiter = request.session['delimiter']
     data_path = request.session['data_path']
     file_handle = io.open(data_path, 'r', 16394, encoding='utf-8-sig')
@@ -82,6 +75,7 @@ def etl_setup(request):
     display_df = display_tf.create_df(nrows=100)
     desc = display_df.describe(datetime_is_numeric=True)
     if request.method == 'POST':
+        post_time = time.time()
         form = BaseFlowForm(request.POST, user_dws=user_dws, col_names=col_names)
         if form.is_valid():
             dbname = request.POST['data_warehose']
@@ -142,6 +136,8 @@ def etl_setup(request):
             file_handle.close()
             conn_wrapper.commit()
             conn_wrapper.close()
+            duration = 1000 * (time.time() - post_time)
+            print(f'---------------\nLoad time was:{duration}ms\n---------------')
             return redirect('home')
 
     context = {
@@ -152,6 +148,8 @@ def etl_setup(request):
         'headers': col_names,
         'desc': desc
     }
+    get_duration = 1000 * (time.time() - get_time)
+    print(f'---------------\nRendering time was:{get_duration}ms\n---------------')
     return render(request, 'etl_setup.html', context)
 
 

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'app'  # Enable the inner app
 ]
 
@@ -135,5 +136,11 @@ MEDIA_URL = '/media/'
 ASGI_APPLICATION = 'core.asgi.application'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}
 #############################################################
 #############################################################
