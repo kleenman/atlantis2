@@ -4,8 +4,13 @@ django==3.2.3
 pycodestyle
 pytz
 sqlparse
-Unipath
+Unipath~=1.1
 dj-database-url
 python-decouple
 gunicorn
 whitenoise
+
+pandas~=1.3.0
+pygrametl~=2.6
+psycopg2~=2.8.6
+channels~=3.0.3
