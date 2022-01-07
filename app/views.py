@@ -3,17 +3,16 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 import io
-import os
 import time
 from django.utils.datastructures import MultiValueDictKeyError
 from pygrametl.datasources import CSVSource, PandasSource
 from pygrametl.tables import Dimension
-from app.utils import double_quote, TableFactory, fix_numbers
+from app.utils import double_quote, TableFactory
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from django.template import loader
-from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.http import HttpResponse
 from django import template
 from .forms import BaseFlowForm, FileUploadForm, DwInfoForm
 from .models import BaseFlow, DwInfo
@@ -151,13 +150,6 @@ def etl_setup(request):
     get_duration = 1000 * (time.time() - get_time)
     print(f'---------------\nRendering time was:{get_duration}ms\n---------------')
     return render(request, 'etl_setup.html', context)
-
-
-def descriptive_statistics(request):
-    context = {
-        'segment': 'etl',
-    }
-    return render(request, 'descriptive_statistics.html', context)
 
 
 def etl(request):

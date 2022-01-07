@@ -8,8 +8,6 @@ import psycopg2
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.contrib.auth.models import User
-from pygrametl.datasources import CSVSource, MergeJoiningSource, TransformingSource
-from pygrametl.tables import Dimension
 
 # Create your models here.
 
@@ -32,10 +30,6 @@ class BaseFlow(models.Model):
     def get_csv_source_handle(self):
         source_file_handle = io.open(self.data_source.path, 'r', 16384, encoding='utf-8-sig')
         return source_file_handle
-
-    def conn_commit_close(self):
-        self.conn_wrapper.commit()
-        self.conn_wrapper.close()
 
 
 class DwInfo(models.Model):
